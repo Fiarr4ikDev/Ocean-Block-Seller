@@ -2,3 +2,5 @@ name: OceanBlockSeller
 version: '${project.version}'
 main: ru.pechan.oceanblockseller.OceanBlockSeller
 api-version: '1.16'
+commands:
+  seller: {}
