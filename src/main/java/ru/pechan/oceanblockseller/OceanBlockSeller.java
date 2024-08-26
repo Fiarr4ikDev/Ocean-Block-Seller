@@ -1,25 +1,73 @@
 package ru.pechan.oceanblockseller;
 
+import net.milkbowl.vault.chat.Chat;
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import ru.pechan.oceanblockseller.command.BalanceCommand;
 import ru.pechan.oceanblockseller.command.SellerCommand;
 
     public final class OceanBlockSeller extends JavaPlugin implements Listener {
 
+        private final JavaPlugin plugin = this;
+        private static Economy econ = null;
+        private static Permission perms = null;
+        private static Chat chat = null;
+
         @Override
         public void onEnable() {
-            getLogger().info("OceanBlockSeller запущен");
+            setupEconomy();
+            setupSellerInventory();
 
-            getCommand("seller").setExecutor(new SellerCommand());
-            Bukkit.getPluginManager().registerEvents(this, this);
+            getCommand("seller").setExecutor(new SellerCommand(this));
+            getCommand("balance").setExecutor(new BalanceCommand(this));
+            getServer().getPluginManager().registerEvents(new SellerCommand(this), this);
+        }
+
+        private void setupSellerInventory() {
+            getSellerInventory();
+        }
+
+        private boolean setupEconomy() {
+            if (getServer().getPluginManager().getPlugin("Vault") == null) {
+                getLogger().severe("Vault плагин не найден! Отключение плагина...");
+                return false;
+            }
+            RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+            if (rsp == null) {
+                getLogger().severe("Сервис экономики не зарегистрирован в Vault! Отключение плагина...");
+                return false;
+            }
+            econ = rsp.getProvider();
+            return econ != null;
+        }
+
+        private boolean setupChat() {
+            RegisteredServiceProvider<Chat> rsp = getServer().getServicesManager().getRegistration(Chat.class);
+            if (rsp == null) {
+                getLogger().warning("Chat service provider is not registered!");
+                return false;
+            }
+
+            chat = rsp.getProvider();
+            if (chat == null) {
+                getLogger().warning("Chat service provider is null!");
+            }
+
+            return chat != null;
+        }
+
+        private boolean setupPermissions() {
+            RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
+            perms = rsp.getProvider();
+            return perms != null;
         }
 
         @Override
@@ -50,24 +98,29 @@ import ru.pechan.oceanblockseller.command.SellerCommand;
             return sharedSellerInventory;
         }
 
-        public static void setItemStackName(ItemStack renamed, String customName) {
-            ItemMeta renamedMeta = renamed.getItemMeta();
-            renamedMeta.setDisplayName(customName);
-            renamed.setItemMeta(renamedMeta);
+        /**
+         * Устанавливает имя для предмета.
+         *
+         * @param item Предмет.
+         * @param name Имя, которое нужно установить.
+         */
+        private static void setItemStackName(ItemStack item, String name) {
+            ItemMeta meta = item.getItemMeta();
+            if (meta != null) {
+                meta.setDisplayName(name);
+                item.setItemMeta(meta);
+            }
         }
 
-        @EventHandler
-        public void onInventoryClick(InventoryClickEvent event) {
-            Player player = (Player) event.getWhoClicked();
-            if (event.getView().getTitle().equals("Продавец")) {
-                player.sendMessage("Нельзя брать предметы");
-                event.setCancelled(true);
+        public static Economy getEconomy() {
+            return econ;
+        }
 
-                ItemStack clickedItem = event.getCurrentItem();
-                if (clickedItem != null && clickedItem.getType() == Material.BARRIER) {
-                    player.sendMessage("Инвентарь закрыт");
-                    player.closeInventory();
-                }
-            }
+        public static Permission getPermissions() {
+            return perms;
+        }
+
+        public static Chat getChat() {
+            return chat;
         }
     }
