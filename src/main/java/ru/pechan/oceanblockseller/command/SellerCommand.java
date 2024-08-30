@@ -45,10 +45,10 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
         /**
          * Обрабатывает команду '/seller' для открытия инвентаря продавца или добавления предметов в него.
          *
-         * @param sender Отправитель команды.
+         * @param sender  Отправитель команды.
          * @param command Команда, которая выполняется.
-         * @param label Псевдоним команды, которая выполняется.
-         * @param args Аргументы, переданные с командой.
+         * @param label   Псевдоним команды, которая выполняется.
+         * @param args    Аргументы, переданные с командой.
          * @return true, если команда успешно выполнена, иначе false.
          */
         @Override
@@ -107,9 +107,9 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
          * Добавляет предмет в инвентарь продавца с заданными лимитом и ценой.
          *
          * @param inventory Инвентарь продавца.
-         * @param item Предмет, который нужно добавить.
-         * @param limit Лимит продаж предмета.
-         * @param price Цена предмета.
+         * @param item      Предмет, который нужно добавить.
+         * @param limit     Лимит продаж предмета.
+         * @param price     Цена предмета.
          */
         private void addItemToInventory(Inventory inventory, ItemStack item, int limit, double price) {
             ItemStack itemInInventory = new ItemStack(item.getType(), 1);
@@ -124,9 +124,10 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
             meta.setDisplayName(displayName);
 
             List<String> lore = new ArrayList<>();
+            double lorePrice = price;
             lore.add(ChatColor.GRAY + "------------------");
             lore.add(ChatColor.WHITE + "Цена за " + ChatColor.BOLD + "x1: " + ChatColor.GOLD + price);
-            lore.add(ChatColor.WHITE + "Цена за " + ChatColor.BOLD + "x64: " + ChatColor.GOLD + price * 64);
+            lore.add(ChatColor.WHITE + "Цена за " + ChatColor.BOLD + "x64: " + ChatColor.GOLD + lorePrice * 64);
             lore.add("");
             lore.add(ChatColor.YELLOW + "Лимит: " + ChatColor.RED + limit);
             lore.add(ChatColor.GRAY + "------------------");
@@ -154,6 +155,7 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
         @EventHandler
         public void onInventoryClick(InventoryClickEvent event) {
             Player player = (Player) event.getWhoClicked();
+
             if (event.getView().getTitle().equals("Продавец")) {
                 event.setCancelled(true);
 
@@ -188,8 +190,8 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
 
             List<String> lore = meta.getLore();
 
-            String limitPart = lore.get(1);
-            String pricePart = lore.get(2);
+            String limitPart = lore.get(4);
+            String pricePart = lore.get(1);
 
             String[] limitParts = limitPart.split(": ");
             String[] priceParts = pricePart.split(": ");
@@ -231,7 +233,6 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
             EconomyResponse response = economy.depositPlayer(player, bdPrice.doubleValue());
 
             if (response.transactionSuccess()) {
-
                 player.getInventory().removeItem(new ItemStack(clickedItem.getType(), 1));
                 player.sendMessage("Вы продали " + clickedItem.getType().name() + " за " + bdPrice.doubleValue() + "!");
 
@@ -243,9 +244,10 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
                 if (newMeta != null) {
                     newMeta.setDisplayName(ChatColor.GREEN + newItem.getType().name() + ChatColor.WHITE);
                     List<String> newLore = new ArrayList<>();
+                    double lorePrice = price;
                     newLore.add(ChatColor.GRAY + "------------------");
                     newLore.add(ChatColor.WHITE + "Цена за " + ChatColor.BOLD + "x1: " + ChatColor.GOLD + price);
-                    newLore.add(ChatColor.WHITE + "Цена за " + ChatColor.BOLD + "x64: " + ChatColor.GOLD + price * 64);
+                    newLore.add(ChatColor.WHITE + "Цена за " + ChatColor.BOLD + "x64: " + ChatColor.GOLD + lorePrice * 64);
                     newLore.add("");
                     newLore.add(ChatColor.YELLOW + "Лимит: " + ChatColor.RED + limit);
                     newLore.add(ChatColor.GRAY + "------------------");
@@ -259,5 +261,4 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
 
             event.setCancelled(true);
         }
-
     }
