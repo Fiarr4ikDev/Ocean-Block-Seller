@@ -214,9 +214,7 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
             }
 
             if (limit <= 0) {
-                Inventory inventory = getSellerInventory();
-                inventory.removeItem(clickedItem);
-                player.sendMessage("Лимит продаж достиг нуля. Предмет удален из инвентаря продавца.");
+                player.sendMessage("Лимит продаж достиг нуля. Подождите время");
                 event.setCancelled(true);
                 return;
             }
