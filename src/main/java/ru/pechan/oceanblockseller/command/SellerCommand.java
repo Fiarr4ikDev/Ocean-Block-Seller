@@ -124,14 +124,16 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
             meta.setDisplayName(displayName);
 
             List<String> lore = new ArrayList<>();
-            double lorePrice = price;
-            lore.add(ChatColor.GRAY + "------------------");
+            double lorePrice = price * 64;
+            lore.add(ChatColor.GRAY + "-----------------------");
             lore.add(ChatColor.WHITE + "Цена за " + ChatColor.BOLD + "x1: " + ChatColor.GOLD + price);
-            lore.add(ChatColor.WHITE + "Цена за " + ChatColor.BOLD + "x64: " + ChatColor.GOLD + lorePrice * 64);
+            lore.add(ChatColor.WHITE + "Цена за " + ChatColor.BOLD + "x64: " + ChatColor.GOLD + lorePrice);
             lore.add("");
             lore.add(ChatColor.YELLOW + "Лимит: " + ChatColor.RED + limit);
-            lore.add(ChatColor.GRAY + "------------------");
-
+            lore.add("");
+            lore.add(ChatColor.WHITE + "Продать " + ChatColor.AQUA + "x1: " + ChatColor.GOLD + "(ПКМ)");
+            lore.add(ChatColor.WHITE + "Продать " + ChatColor.AQUA + "x64: " + ChatColor.GOLD + "(ЛКМ)");
+            lore.add(ChatColor.GRAY + "-----------------------");
             meta.setLore(lore);
 
             itemInInventory.setItemMeta(meta);
@@ -146,12 +148,6 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
             inventory.addItem(itemInInventory);
         }
 
-        /**
-         * Обрабатывает клики по предметам в инвентаре продавца.
-         * Уменьшает лимит предмета, если он есть в инвентаре игрока, и начисляет деньги.
-         *
-         * @param event Событие клика по инвентарю.
-         */
         @EventHandler
         public void onInventoryClick(InventoryClickEvent event) {
             Player player = (Player) event.getWhoClicked();
@@ -189,6 +185,10 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
             }
 
             List<String> lore = meta.getLore();
+            if (lore == null || lore.size() < 8) {
+                player.sendMessage("Ошибка при получении лимита или цены предмета.");
+                return;
+            }
 
             String limitPart = lore.get(4);
             String pricePart = lore.get(1);
@@ -213,26 +213,31 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
                 return;
             }
 
-            if (limit <= 0) {
-                player.sendMessage("Лимит продаж достиг нуля. Подождите время");
-                event.setCancelled(true);
-                return;
+            int amountToSell = event.isRightClick() ? 1 : event.isLeftClick() ? 64 : 0;
+
+            if (amountToSell > limit) {
+                if (limit <= 0) {
+                    player.sendMessage("Лимит продаж достиг нуля. Подождите время");
+                    event.setCancelled(true);
+                    return;
+                }
+                amountToSell = limit;
             }
 
-            ItemStack itemInInventory = new ItemStack(clickedItem.getType(), 1);
-            if (!player.getInventory().containsAtLeast(itemInInventory, 1)) {
+            ItemStack itemInInventory = new ItemStack(clickedItem.getType(), amountToSell);
+            if (!player.getInventory().containsAtLeast(itemInInventory, amountToSell)) {
                 player.sendMessage("У вас нет необходимых предметов для продажи.");
                 event.setCancelled(true);
                 return;
             }
 
-            limit--;
-            BigDecimal bdPrice = BigDecimal.valueOf(price).setScale(2, RoundingMode.HALF_UP);
+            limit -= amountToSell;
+            BigDecimal bdPrice = BigDecimal.valueOf(price * amountToSell).setScale(2, RoundingMode.HALF_UP);
             EconomyResponse response = economy.depositPlayer(player, bdPrice.doubleValue());
 
             if (response.transactionSuccess()) {
-                player.getInventory().removeItem(new ItemStack(clickedItem.getType(), 1));
-                player.sendMessage("Вы продали " + clickedItem.getType().name() + " за " + bdPrice.doubleValue() + "!");
+                player.getInventory().removeItem(new ItemStack(clickedItem.getType(), amountToSell));
+                player.sendMessage("Вы продали " + amountToSell + " " + clickedItem.getType().name() + " за " + bdPrice.doubleValue() + "!");
 
                 Inventory inventory = getSellerInventory();
                 inventory.removeItem(clickedItem);
@@ -243,12 +248,15 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
                     newMeta.setDisplayName(ChatColor.GREEN + newItem.getType().name() + ChatColor.WHITE);
                     List<String> newLore = new ArrayList<>();
                     double lorePrice = price;
-                    newLore.add(ChatColor.GRAY + "------------------");
-                    newLore.add(ChatColor.WHITE + "Цена за " + ChatColor.BOLD + "x1: " + ChatColor.GOLD + price);
-                    newLore.add(ChatColor.WHITE + "Цена за " + ChatColor.BOLD + "x64: " + ChatColor.GOLD + lorePrice * 64);
-                    newLore.add("");
+                    newLore.add(ChatColor.GRAY + "-----------------------");
+                    newLore.add(ChatColor.WHITE + "Купит " + ChatColor.BOLD + "x1  " + ChatColor.GRAY + " (ПКМ)" + ChatColor.WHITE + " за " + ChatColor.GOLD + price);
+                    newLore.add(ChatColor.WHITE + "Купит " + ChatColor.BOLD + "x64 " + ChatColor.GRAY + " (ЛКМ)" + ChatColor.WHITE + " за " + ChatColor.GOLD + lorePrice * 64);
+                    newLore.add(" ");
                     newLore.add(ChatColor.YELLOW + "Лимит: " + ChatColor.RED + limit);
-                    newLore.add(ChatColor.GRAY + "------------------");
+                    newLore.add("");
+                    newLore.add(ChatColor.WHITE + "Продать " + ChatColor.AQUA + "x1: " + ChatColor.GOLD + "(ПКМ)");
+                    newLore.add(ChatColor.WHITE + "Продать " + ChatColor.AQUA + "x64: " + ChatColor.GOLD + "(ЛКМ)");
+                    newLore.add(ChatColor.GRAY + "-----------------------");
                     newMeta.setLore(newLore);
                     newItem.setItemMeta(newMeta);
                 }
