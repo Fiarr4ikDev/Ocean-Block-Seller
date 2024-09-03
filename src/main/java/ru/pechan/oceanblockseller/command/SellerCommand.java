@@ -251,7 +251,7 @@ import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
                     newLore.add(ChatColor.GRAY + "-----------------------");
                     newLore.add(ChatColor.WHITE + "Купит " + ChatColor.BOLD + "x1  " + ChatColor.GRAY + " (ПКМ)" + ChatColor.WHITE + " за " + ChatColor.GOLD + price);
                     newLore.add(ChatColor.WHITE + "Купит " + ChatColor.BOLD + "x64 " + ChatColor.GRAY + " (ЛКМ)" + ChatColor.WHITE + " за " + ChatColor.GOLD + lorePrice * 64);
-                    newLore.add(" ");
+                    newLore.add("");
                     newLore.add(ChatColor.YELLOW + "Лимит: " + ChatColor.RED + limit);
                     newLore.add("");
                     newLore.add(ChatColor.WHITE + "Продать " + ChatColor.AQUA + "x1: " + ChatColor.GOLD + "(ПКМ)");
