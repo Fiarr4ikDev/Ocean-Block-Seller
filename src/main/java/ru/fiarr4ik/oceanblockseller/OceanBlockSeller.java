@@ -1,4 +1,4 @@
-package ru.pechan.oceanblockseller;
+package ru.fiarr4ik.oceanblockseller;
 
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
@@ -11,8 +11,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import ru.pechan.oceanblockseller.command.BalanceCommand;
-import ru.pechan.oceanblockseller.command.SellerCommand;
+import ru.fiarr4ik.oceanblockseller.command.BalanceCommand;
+import ru.fiarr4ik.oceanblockseller.command.SellerCommand;
 
     public final class OceanBlockSeller extends JavaPlugin implements Listener {
 
@@ -77,22 +77,49 @@ import ru.pechan.oceanblockseller.command.SellerCommand;
 
         private static Inventory sharedSellerInventory;
 
+        /**
+         * <a href="https://imgur.com/a/NwXtQ9K">Внешний вид продавца</a>
+         */
         public static Inventory getSellerInventory() {
 
             if (sharedSellerInventory == null) {
                 sharedSellerInventory = Bukkit.createInventory(null, 54, "Продавец");
 
-                // Огородка красным стеклом
-                ItemStack glass = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
-                setItemStackName(glass, " ");
-                for (int i = 36; i <= 44; i++) {
-                    sharedSellerInventory.setItem(i, glass);
-                }
+                ItemStack redGlass = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
+                setItemStackName(redGlass, "§cЗакрыть");
 
-                // Кнопка выхода
-                ItemStack exit = new ItemStack(Material.BARRIER, 1);
-                setItemStackName(exit, "§cЗакрыть");
-                sharedSellerInventory.setItem(49, exit);
+                ItemStack blackGlass = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
+                setItemStackName(blackGlass, " ");
+
+                ItemStack timer = new ItemStack(Material.CLOCK, 1);
+                setItemStackName(timer, "TODO таймер");
+
+                ItemStack info = new ItemStack(Material.OAK_SIGN, 1);
+                setItemStackName(info, "TODO инфо о скупщике");
+
+                for (int i = 0; i <= 8; i++) {
+                    sharedSellerInventory.setItem(i, blackGlass);
+                }
+                sharedSellerInventory.setItem(9, blackGlass);
+                sharedSellerInventory.setItem(17, blackGlass);
+                sharedSellerInventory.setItem(18, blackGlass);
+                sharedSellerInventory.setItem(26, blackGlass);
+                sharedSellerInventory.setItem(27, blackGlass);
+                sharedSellerInventory.setItem(35, blackGlass);
+                sharedSellerInventory.setItem(36, blackGlass);
+                sharedSellerInventory.setItem(44, blackGlass);
+                sharedSellerInventory.setItem(45, blackGlass);
+                sharedSellerInventory.setItem(46, blackGlass);
+                sharedSellerInventory.setItem(47, info);
+                sharedSellerInventory.setItem(48, blackGlass);
+                sharedSellerInventory.setItem(49, redGlass);
+                sharedSellerInventory.setItem(50, blackGlass);
+                sharedSellerInventory.setItem(51, timer);
+                sharedSellerInventory.setItem(52, blackGlass);
+                sharedSellerInventory.setItem(53, blackGlass);
+
+
+
             }
 
             return sharedSellerInventory;

@@ -1,4 +1,4 @@
-package ru.pechan.oceanblockseller.command;
+package ru.fiarr4ik.oceanblockseller.command;
 
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
@@ -11,7 +11,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import static ru.pechan.oceanblockseller.OceanBlockSeller.getEconomy;
+import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
 
     /**
      * Команда для проверки баланса игрока с округлением до сотых.

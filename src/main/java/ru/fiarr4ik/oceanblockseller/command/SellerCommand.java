@@ -1,4 +1,4 @@
-package ru.pechan.oceanblockseller.command;
+package ru.fiarr4ik.oceanblockseller.command;
 
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static ru.pechan.oceanblockseller.OceanBlockSeller.getEconomy;
-import static ru.pechan.oceanblockseller.OceanBlockSeller.getSellerInventory;
+import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
+import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getSellerInventory;
 
     /**
      * Обработчик команд и слушатель событий для команды продавца и взаимодействия с инвентарём.

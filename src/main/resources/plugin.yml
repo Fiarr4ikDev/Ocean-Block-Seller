@@ -1,8 +1,11 @@
 name: OceanBlockSeller
 version: '${project.version}'
-main: ru.pechan.oceanblockseller.OceanBlockSeller
+main: ru.fiarr4ik.oceanblockseller.OceanBlockSeller
 api-version: '1.16'
 depend: [Vault, Essentials]
 commands:
   seller:
   balance:
+permissions:
+  itembuyer.seller:
+  itembuyer.selleredit:
