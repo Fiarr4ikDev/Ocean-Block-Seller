@@ -59,18 +59,26 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getSellerInventory;
                     if (args.length == 0) {
                         player.openInventory(getSellerInventory());
                         player.sendMessage("Вы открыли инвентарь продавца.");
-                    } else if (args.length == 4 && args[0].equalsIgnoreCase("sell")) {
+                    } else if (args.length == 5 && args[0].equalsIgnoreCase("sell")) {
                         try {
                             int limit = Integer.parseInt(args[1]);
                             double minPrice = Double.parseDouble(args[2]);
                             double maxPrice = Double.parseDouble(args[3]);
+
+                            Material material = Material.getMaterial(args[4].toUpperCase());
+                            if (material == null) {
+                                player.sendMessage("Неверный материал: " + args[4]);
+                                return true;
+                            }
+
+                            ItemStack itemId = new ItemStack(material);
                             ItemStack itemInHand = player.getInventory().getItemInMainHand();
 
-                            if (itemInHand != null && itemInHand.getType() != Material.AIR) {
+                            if (itemId.getType() != Material.AIR) {
                                 double price = getRandomPrice(minPrice, maxPrice);
 
                                 Inventory inventory = getSellerInventory();
-                                addItemToInventory(inventory, itemInHand, limit, price);
+                                addItemToInventory(inventory, itemId, limit, price);
                                 player.sendMessage("Предмет добавлен в инвентарь продавца с ценой: " + price + " и лимитом: " + limit);
                             } else {
                                 player.sendMessage("У вас в руке нет предмета для продажи.");
@@ -79,7 +87,7 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getSellerInventory;
                             player.sendMessage("Параметры цены и лимита должны быть числами.");
                         }
                     } else {
-                        player.sendMessage("Неправильное использование команды. Правильный формат: /seller sell <limit> <minprice> <maxprice>");
+                        player.sendMessage("Неправильное использование команды. Правильный формат: /seller sell <limit> <minprice> <maxprice> <itemId>");
                     }
                 }
             }

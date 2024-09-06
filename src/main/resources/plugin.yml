@@ -8,4 +8,8 @@ commands:
   balance:
 permissions:
   itembuyer.seller:
+    description: Позволяет пользователю использовать команду продавца
+    default: true
   itembuyer.selleredit:
+    description: Позволяет пользователю управлять торгами продавца
+    default: op
