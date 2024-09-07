@@ -57,38 +57,47 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getSellerInventory;
                 Player player = (Player) sender;
                 if (command.getName().equalsIgnoreCase("seller")) {
                     if (args.length == 0) {
-                        player.openInventory(getSellerInventory());
-                        player.sendMessage("Вы открыли инвентарь продавца.");
+                        if (player.hasPermission("itembuyer.seller")) {
+                            player.openInventory(getSellerInventory());
+                            player.sendMessage("Вы открыли инвентарь продавца.");
+                        } else {
+                            player.sendMessage("Эта команда только для игроков");
+                        }
                     } else if (args.length == 5 && args[0].equalsIgnoreCase("sell")) {
-                        try {
-                            int limit = Integer.parseInt(args[1]);
-                            double minPrice = Double.parseDouble(args[2]);
-                            double maxPrice = Double.parseDouble(args[3]);
+                        if (player.hasPermission("itembuyer.selleredit")) {
+                            try {
+                                int limit = Integer.parseInt(args[1]);
+                                double minPrice = Double.parseDouble(args[2]);
+                                double maxPrice = Double.parseDouble(args[3]);
 
-                            Material material = Material.getMaterial(args[4].toUpperCase());
-                            if (material == null) {
-                                player.sendMessage("Неверный материал: " + args[4]);
-                                return true;
+                                Material material = Material.getMaterial(args[4].toUpperCase());
+                                if (material == null) {
+                                    player.sendMessage("Неверный материал: " + args[4]);
+                                    return true;
+                                }
+
+                                ItemStack itemId = new ItemStack(material);
+                                ItemStack itemInHand = player.getInventory().getItemInMainHand();
+
+                                if (itemId.getType() != Material.AIR) {
+                                    double price = getRandomPrice(minPrice, maxPrice);
+
+                                    Inventory inventory = getSellerInventory();
+                                    addItemToInventory(inventory, itemId, limit, price);
+                                    player.sendMessage("Предмет добавлен в инвентарь продавца с ценой: " + price + " и лимитом: " + limit);
+                                } else {
+                                    player.sendMessage("У вас в руке нет предмета для продажи.");
+                                }
+                            } catch (NumberFormatException e) {
+                                player.sendMessage("Параметры цены и лимита должны быть числами.");
                             }
-
-                            ItemStack itemId = new ItemStack(material);
-                            ItemStack itemInHand = player.getInventory().getItemInMainHand();
-
-                            if (itemId.getType() != Material.AIR) {
-                                double price = getRandomPrice(minPrice, maxPrice);
-
-                                Inventory inventory = getSellerInventory();
-                                addItemToInventory(inventory, itemId, limit, price);
-                                player.sendMessage("Предмет добавлен в инвентарь продавца с ценой: " + price + " и лимитом: " + limit);
-                            } else {
-                                player.sendMessage("У вас в руке нет предмета для продажи.");
-                            }
-                        } catch (NumberFormatException e) {
-                            player.sendMessage("Параметры цены и лимита должны быть числами.");
+                        } else {
+                            player.sendMessage("Эта команда недоступна игрокам");
                         }
                     } else {
                         player.sendMessage("Неправильное использование команды. Правильный формат: /seller sell <limit> <minprice> <maxprice> <itemId>");
                     }
+
                 }
             }
             return true;
