@@ -12,6 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.fiarr4ik.oceanblockseller.command.BalanceCommand;
+import ru.fiarr4ik.oceanblockseller.command.ReloadTradesCommand;
 import ru.fiarr4ik.oceanblockseller.command.SellerCommand;
 
     public final class OceanBlockSeller extends JavaPlugin implements Listener {
@@ -28,6 +29,7 @@ import ru.fiarr4ik.oceanblockseller.command.SellerCommand;
 
             getCommand("seller").setExecutor(new SellerCommand(this));
             getCommand("balance").setExecutor(new BalanceCommand(this));
+            getCommand("reloadsell").setExecutor(new ReloadTradesCommand(this));
             getServer().getPluginManager().registerEvents(new SellerCommand(this), this);
         }
 

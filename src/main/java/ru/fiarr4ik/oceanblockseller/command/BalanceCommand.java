@@ -19,6 +19,7 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
     public class BalanceCommand implements CommandExecutor {
 
         private Economy economy;
+        private String serverPluginName = ChatColor.AQUA + "OceanSeller  ";
 
         /**
          * Конструктор для инициализации экземпляра экономики.
@@ -47,11 +48,11 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
 
                 BigDecimal roundedBalance = new BigDecimal(balance).setScale(2, RoundingMode.HALF_UP);
 
-                player.sendMessage(ChatColor.GREEN + "Ваш текущий баланс: " + ChatColor.GOLD + roundedBalance);
+                player.sendMessage(serverPluginName + ChatColor.GREEN + "Ваш текущий баланс: " + ChatColor.GOLD + roundedBalance);
 
                 return true;
             } else {
-                sender.sendMessage(ChatColor.RED + "Эта команда доступна только игрокам.");
+                sender.sendMessage(serverPluginName + ChatColor.RED + "У вас недостаточно прав на использование команды.");
                 return false;
             }
         }

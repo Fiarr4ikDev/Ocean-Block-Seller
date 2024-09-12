@@ -4,6 +4,7 @@ main: ru.fiarr4ik.oceanblockseller.OceanBlockSeller
 api-version: '1.16'
 depend: [Vault, Essentials]
 commands:
+  reloadsell:
   seller:
   balance:
 permissions:
