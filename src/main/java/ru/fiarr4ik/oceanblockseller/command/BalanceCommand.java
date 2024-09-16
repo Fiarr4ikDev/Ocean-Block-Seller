@@ -18,8 +18,8 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
      */
     public class BalanceCommand implements CommandExecutor {
 
-        private Economy economy;
-        private String serverPluginName = ChatColor.AQUA + "OceanSeller  ";
+        private final Economy economy;
+        private final String serverPluginName = ChatColor.AQUA + "OceanSeller | ";
 
         /**
          * Конструктор для инициализации экземпляра экономики.

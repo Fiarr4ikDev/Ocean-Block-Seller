@@ -27,8 +27,7 @@ import static ru.fiarr4ik.oceanblockseller.command.SellerCommand.getRandomPrice;
     public class ReloadTradesCommand implements CommandExecutor {
 
         private final JavaPlugin plugin;
-        private ObjectMapper objectMapper;
-        private String serverPluginName = ChatColor.AQUA + "OceanSeller  ";
+        private final String serverPluginName = ChatColor.AQUA + "OceanSeller | ";
 
         public ReloadTradesCommand(JavaPlugin plugin) {
             this.plugin = plugin;
@@ -37,26 +36,30 @@ import static ru.fiarr4ik.oceanblockseller.command.SellerCommand.getRandomPrice;
         @Override
         public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
             Player player = (Player) sender;
-            objectMapper = new ObjectMapper();
+            ObjectMapper objectMapper = new ObjectMapper();
 
             File file = new File(plugin.getDataFolder(), "config/items.json");
 
-            try {
-                List<Item> items = objectMapper.readValue(file, new TypeReference<List<Item>>() {});
-                if (items.size() > 28) {
-                    player.sendMessage(serverPluginName + ChatColor.RED + " Количество предметов в конфиге больше вместительности скупщика. (28)");
-                } else {
-                    Inventory inventory = getSellerInventory();
+            if (player.hasPermission("itembuyer.selleredit")) {
+                try {
+                    List<Item> items = objectMapper.readValue(file, new TypeReference<List<Item>>() {});
+                    if (items.size() > 28) {
+                        player.sendMessage(serverPluginName + ChatColor.RED + " Количество предметов в конфиге больше вместительности скупщика. (28)");
+                    } else {
+                        Inventory inventory = getSellerInventory();
 
-                    for (Item item : items) {
-                        Material material = Material.getMaterial(item.getName().toUpperCase());
-                        ItemStack itemStack = new ItemStack(material);
-                        addItemToInventory(inventory, itemStack, item.getAmount(), getRandomPrice(item.getMinPrice(), item.getMaxPrice()));
+                        for (Item item : items) {
+                            Material material = Material.getMaterial(item.getName().toUpperCase());
+                            ItemStack itemStack = new ItemStack(material);
+                            addItemToInventory(inventory, itemStack, item.getAmount(), getRandomPrice(item.getMinPrice(), item.getMaxPrice()));
+                        }
+                        player.sendMessage(serverPluginName + "Предметы успешно выставлены на скупку");
                     }
-                    player.sendMessage(serverPluginName + "Предметы успешно выставлены на скупку");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } else {
+                player.sendMessage(serverPluginName + ChatColor.RED + "У вас недостаточно прав на использование команды.");
             }
 
             return true;
