@@ -16,6 +16,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.fiarr4ik.oceanblockseller.command.ReloadTradesCommand;
 import ru.fiarr4ik.oceanblockseller.command.SellerCommand;
+import ru.fiarr4ik.oceanblockseller.command.SellerTabCompleter;
 import ru.fiarr4ik.oceanblockseller.utils.UtilityClass;
 
 import java.io.File;
@@ -39,6 +40,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
             setupSellerInventory();
 
             getCommand("seller").setExecutor(new SellerCommand(this));
+            getCommand("seller").setTabCompleter(new SellerTabCompleter());
             getCommand("reloadsell").setExecutor(new ReloadTradesCommand(this));
             getServer().getPluginManager().registerEvents(new SellerCommand(this), this);
             startTimer();
