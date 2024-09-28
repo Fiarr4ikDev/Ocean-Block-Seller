@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -122,7 +124,11 @@ import static ru.fiarr4ik.oceanblockseller.command.SellerCommand.getRandomPrice;
                             addItemToInventory(inventory, itemStack, item.getAmount(), getRandomPrice(item.getMinPrice(), item.getMaxPrice()));
                         }
                     }
-                    player.sendMessage(SERVER_PLUGIN_NAME + ChatColor.WHITE + "Скупщик обновил свои товары и лимиты");
+                    for (Player players : Bukkit.getOnlinePlayers()) {
+                        Location location = players.getLocation();
+                        players.playSound(location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 2, 2);
+                        player.sendMessage(SERVER_PLUGIN_NAME + ChatColor.WHITE + "Скупщик обновил свои товары и лимиты");
+                    }
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
