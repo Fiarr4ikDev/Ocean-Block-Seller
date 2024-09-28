@@ -6,7 +6,7 @@
 
   <groupId>ru.fiarr4ik</groupId>
   <artifactId>OceanBlockSeller</artifactId>
-  <version>1.16.5-0.0.4</version>
+  <version>1.16.5-0.0.5</version>
   <packaging>jar</packaging>
 
   <name>OceanBlockSeller</name>

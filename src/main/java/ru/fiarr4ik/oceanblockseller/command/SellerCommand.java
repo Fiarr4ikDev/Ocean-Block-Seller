@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Random;
 
 import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
-import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getSellerInventory;
+import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory;
 
     /**
      * Обработчик команд и слушатель событий для команды продавца и взаимодействия с инвентарём.
@@ -73,7 +73,8 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getSellerInventory;
 
                                 Material material = Material.getMaterial(args[4].toUpperCase());
                                 if (material == null) {
-                                    player.sendMessage(serverPluginName + "Неверный материал: " +
+                                    player.sendMessage(serverPluginName +
+                                            ChatColor.YELLOW + "Неверный материал: " +
                                             ChatColor.WHITE + args[4]);
                                     return true;
                                 }
@@ -102,9 +103,6 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getSellerInventory;
                                                         ChatColor.GOLD + price +
                                                         ChatColor.WHITE + " и лимитом: " +
                                                         ChatColor.RED + limit);
-                                            } else {
-                                                player.sendMessage(serverPluginName +
-                                                        ChatColor.YELLOW + "У вас в руке нет предмета для продажи.");
                                             }
                                         }
                                     }
@@ -199,7 +197,7 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getSellerInventory;
                 event.setCancelled(true);
 
                 ItemStack clickedItem = event.getCurrentItem();
-                if (clickedItem != null && clickedItem.getType() == Material.BARRIER) {
+                if (clickedItem != null && clickedItem.getType() == Material.RED_STAINED_GLASS_PANE) {
                     player.closeInventory();
                 }
             }
@@ -227,23 +225,12 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getSellerInventory;
             }
 
             List<String> lore = meta.getLore();
-            if (lore == null || lore.size() < 8) {
-                player.sendMessage(serverPluginName +
-                        ChatColor.YELLOW + "Ошибка при получении лимита или цены предмета.");
-                return;
-            }
 
             String limitPart = lore.get(4);
             String pricePart = lore.get(1);
 
             String[] limitParts = limitPart.split(": ");
             String[] priceParts = pricePart.split(": ");
-
-            if (limitParts.length < 2 || priceParts.length < 2) {
-                player.sendMessage(serverPluginName +
-                        ChatColor.YELLOW + "Ошибка при получении лимита или цены предмета.");
-                return;
-            }
 
             int limit;
             double price;

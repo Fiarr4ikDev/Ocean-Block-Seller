@@ -6,7 +6,6 @@ depend: [Vault, Essentials]
 commands:
   reloadsell:
   seller:
-  balance:
 permissions:
   itembuyer.seller:
     description: Позволяет пользователю использовать команду продавца

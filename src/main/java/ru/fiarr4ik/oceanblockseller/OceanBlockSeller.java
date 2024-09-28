@@ -1,19 +1,28 @@
 package ru.fiarr4ik.oceanblockseller;
 
+import lombok.Getter;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import ru.fiarr4ik.oceanblockseller.command.BalanceCommand;
 import ru.fiarr4ik.oceanblockseller.command.ReloadTradesCommand;
 import ru.fiarr4ik.oceanblockseller.command.SellerCommand;
+import ru.fiarr4ik.oceanblockseller.utils.UtilityClass;
+
+import java.io.File;
+import java.time.LocalTime;
+
+import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory;
+import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
 
     public final class OceanBlockSeller extends JavaPlugin implements Listener {
 
@@ -21,6 +30,8 @@ import ru.fiarr4ik.oceanblockseller.command.SellerCommand;
         private static Economy econ = null;
         private static Permission perms = null;
         private static Chat chat = null;
+        @Getter
+        private static LocalTime time = LocalTime.of(0, 0, 20);
 
         @Override
         public void onEnable() {
@@ -28,9 +39,34 @@ import ru.fiarr4ik.oceanblockseller.command.SellerCommand;
             setupSellerInventory();
 
             getCommand("seller").setExecutor(new SellerCommand(this));
-            getCommand("balance").setExecutor(new BalanceCommand(this));
             getCommand("reloadsell").setExecutor(new ReloadTradesCommand(this));
             getServer().getPluginManager().registerEvents(new SellerCommand(this), this);
+            startTimer();
+        }
+
+        private void startTimer() {
+            Bukkit.getScheduler().runTaskTimer(this, this::updateTime, 0L, 20L);
+        }
+
+        private void updateTime() {
+            ItemStack timer = new ItemStack(Material.CLOCK, 1);
+            setItemStackName(timer,
+                    ChatColor.AQUA + "Время до обновления таймера " +
+                    ChatColor.GOLD + OceanBlockSeller.getTime().toString());
+            getSellerInventory().setItem(51, timer);
+
+            if (time.getSecond() > 0 || time.getMinute() > 0 || time.getHour() > 0) {
+                time = time.minusSeconds(1);
+            } else {
+
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    File file = new File(plugin.getDataFolder(), "config/items.json");
+                    UtilityClass.loadTrades(p, file);
+                    Location loc = p.getLocation();
+                    p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 2, 2);
+                }
+                time = LocalTime.of(0, 0, 20);
+            }
         }
 
         private void setupSellerInventory() {
@@ -77,70 +113,6 @@ import ru.fiarr4ik.oceanblockseller.command.SellerCommand;
 
         }
 
-        private static Inventory sharedSellerInventory;
-
-        /**
-         * <a href="https://imgur.com/a/NwXtQ9K">Внешний вид продавца</a>
-         */
-        public static Inventory getSellerInventory() {
-
-            if (sharedSellerInventory == null) {
-                sharedSellerInventory = Bukkit.createInventory(null, 54, "Продавец");
-
-                ItemStack redGlass = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
-                setItemStackName(redGlass, "§cЗакрыть");
-
-                ItemStack blackGlass = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
-                setItemStackName(blackGlass, " ");
-
-                ItemStack timer = new ItemStack(Material.CLOCK, 1);
-                setItemStackName(timer, "TODO таймер");
-
-                ItemStack info = new ItemStack(Material.OAK_SIGN, 1);
-                setItemStackName(info, "TODO инфо о скупщике");
-
-                for (int i = 0; i <= 8; i++) {
-                    sharedSellerInventory.setItem(i, blackGlass);
-                }
-                sharedSellerInventory.setItem(9, blackGlass);
-                sharedSellerInventory.setItem(17, blackGlass);
-                sharedSellerInventory.setItem(18, blackGlass);
-                sharedSellerInventory.setItem(26, blackGlass);
-                sharedSellerInventory.setItem(27, blackGlass);
-                sharedSellerInventory.setItem(35, blackGlass);
-                sharedSellerInventory.setItem(36, blackGlass);
-                sharedSellerInventory.setItem(44, blackGlass);
-                sharedSellerInventory.setItem(45, blackGlass);
-                sharedSellerInventory.setItem(46, blackGlass);
-                sharedSellerInventory.setItem(47, info);
-                sharedSellerInventory.setItem(48, blackGlass);
-                sharedSellerInventory.setItem(49, redGlass);
-                sharedSellerInventory.setItem(50, blackGlass);
-                sharedSellerInventory.setItem(51, timer);
-                sharedSellerInventory.setItem(52, blackGlass);
-                sharedSellerInventory.setItem(53, blackGlass);
-
-
-
-            }
-
-            return sharedSellerInventory;
-        }
-
-        /**
-         * Устанавливает имя для предмета.
-         *
-         * @param item Предмет.
-         * @param name Имя, которое нужно установить.
-         */
-        private static void setItemStackName(ItemStack item, String name) {
-            ItemMeta meta = item.getItemMeta();
-            if (meta != null) {
-                meta.setDisplayName(name);
-                item.setItemMeta(meta);
-            }
-        }
-
         public static Economy getEconomy() {
             return econ;
         }
@@ -149,7 +121,4 @@ import ru.fiarr4ik.oceanblockseller.command.SellerCommand;
             return perms;
         }
 
-        public static Chat getChat() {
-            return chat;
-        }
     }
