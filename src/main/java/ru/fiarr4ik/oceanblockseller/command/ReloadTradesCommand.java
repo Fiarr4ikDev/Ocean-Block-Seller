@@ -10,7 +10,7 @@ import ru.fiarr4ik.oceanblockseller.utils.UtilityClass;
 
 import java.io.File;
 
-/**
+    /**
      * Команда для обновления товаров у скупщика через JSON конфиг
      */
     public class ReloadTradesCommand implements CommandExecutor {

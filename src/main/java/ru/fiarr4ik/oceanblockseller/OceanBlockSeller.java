@@ -32,7 +32,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
         private static Permission perms = null;
         private static Chat chat = null;
         @Getter
-        private static LocalTime time = LocalTime.of(0, 0, 20);
+        private static LocalTime time = LocalTime.of(4, 0, 0);
 
         @Override
         public void onEnable() {
@@ -54,7 +54,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
             ItemStack timer = new ItemStack(Material.CLOCK, 1);
             setItemStackName(timer,
                     ChatColor.AQUA + "Время до обновления таймера " +
-                    ChatColor.GOLD + OceanBlockSeller.getTime().toString());
+                            ChatColor.GOLD + OceanBlockSeller.getTime().toString());
             getSellerInventory().setItem(51, timer);
 
             if (time.getSecond() > 0 || time.getMinute() > 0 || time.getHour() > 0) {
@@ -67,7 +67,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
                     Location loc = p.getLocation();
                     p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 2, 2);
                 }
-                time = LocalTime.of(0, 0, 20);
+                time = LocalTime.of(4, 0, 0);
             }
         }
 

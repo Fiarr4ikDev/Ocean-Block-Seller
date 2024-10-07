@@ -1,9 +1,12 @@
 package ru.fiarr4ik.oceanblockseller.command;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,7 +19,11 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import ru.fiarr4ik.oceanblockseller.config.Item;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -33,6 +40,8 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
 
         private final Economy economy;
         private final String serverPluginName = ChatColor.AQUA + "OceanSeller | ";
+        private final JavaPlugin plugin;
+        private final ObjectMapper objectMapper;
 
         /**
          * Конструктор для инициализации экземпляра экономики.
@@ -41,6 +50,8 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
          */
         public SellerCommand(JavaPlugin plugin) {
             this.economy = getEconomy();
+            this.plugin = plugin;
+            this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         }
 
         /**
@@ -60,6 +71,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
                     if (args.length == 0) {
                         if (player.hasPermission("itembuyer.seller")) {
                             player.openInventory(getSellerInventory());
+                            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_YES, 1, 1);
                         } else {
                             player.sendMessage(serverPluginName +
                                     ChatColor.WHITE + "Эта команда только для игроков");
@@ -98,30 +110,22 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
 
                                                 Inventory inventory = getSellerInventory();
                                                 addItemToInventory(inventory, itemId, limit, price);
-                                                player.sendMessage(serverPluginName +
-                                                        ChatColor.WHITE + "Предмет добавлен в инвентарь продавца с ценой: " +
-                                                        ChatColor.GOLD + price +
-                                                        ChatColor.WHITE + " и лимитом: " +
-                                                        ChatColor.RED + limit);
+                                                player.sendMessage(serverPluginName + ChatColor.WHITE + "Предмет добавлен в инвентарь продавца с ценой: " + ChatColor.GOLD + price + ChatColor.WHITE + " и лимитом: " + ChatColor.RED + limit);
+
+                                                saveItemToConfig(material.name().toLowerCase(), limit, minPrice, maxPrice);
                                             }
                                         }
                                     }
                                 }
-
                             } catch (NumberFormatException e) {
-                                player.sendMessage(serverPluginName +
-                                        ChatColor.YELLOW + "Параметры цены и лимита должны быть числами.");
+                                player.sendMessage(serverPluginName + ChatColor.YELLOW + "Параметры цены и лимита должны быть числами.");
                             }
                         } else {
-                            player.sendMessage(serverPluginName +
-                                    ChatColor.RED + "У вас недостаточно прав на использование команды.");
+                            player.sendMessage(serverPluginName + ChatColor.RED + "У вас недостаточно прав на использование команды.");
                         }
                     } else {
-                        player.sendMessage(serverPluginName +
-                                ChatColor.YELLOW + "Неправильное использование команды. Правильный формат:" +
-                                ChatColor.WHITE + " /seller sell <limit> <minprice> <maxprice> <itemName>");
+                        player.sendMessage(serverPluginName + ChatColor.YELLOW + "Неправильное использование команды. Правильный формат:" + ChatColor.WHITE + " /seller sell <limit> <minprice> <maxprice> <itemName>");
                     }
-
                 }
             }
             return true;
@@ -159,9 +163,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
                 return;
             }
 
-            String itemName = item.getType().name();
-            String displayName = ChatColor.GREEN + itemName + ChatColor.WHITE;
-
+            String displayName = ChatColor.GREEN + getLocalizedItemName(item);
             meta.setDisplayName(displayName);
 
             List<String> lore = new ArrayList<>();
@@ -189,8 +191,42 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
             inventory.addItem(itemInInventory);
         }
 
+        private static String getLocalizedItemName(ItemStack item) {
+            return item.getType().getKey().getKey().replace("_", " ").toUpperCase();
+        }
+
+        private void saveItemToConfig(String name, int amount, double minPrice, double maxPrice) {
+            File file = new File(plugin.getDataFolder(), "config/items.json");
+            List<Item> items = new ArrayList<>();
+
+            if (file.exists()) {
+                items = loadItemsFromFile(file);
+            }
+
+            items.add(new Item(name, amount, minPrice, maxPrice));
+
+            try (FileWriter writer = new FileWriter(file)) {
+                objectMapper.writeValue(writer, items);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private List<Item> loadItemsFromFile(File file) {
+            try {
+                return objectMapper.readValue(file, objectMapper.getTypeFactory().constructCollectionType(List.class, Item.class));
+            } catch (IOException e) {
+                e.printStackTrace();
+                return new ArrayList<>();
+            }
+        }
+
         @EventHandler
         public void onInventoryClick(InventoryClickEvent event) {
+            if (!(event.getWhoClicked() instanceof Player)) {
+                return;
+            }
+
             Player player = (Player) event.getWhoClicked();
 
             if (event.getView().getTitle().equals("Продавец")) {
@@ -200,10 +236,6 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
                 if (clickedItem != null && clickedItem.getType() == Material.RED_STAINED_GLASS_PANE) {
                     player.closeInventory();
                 }
-            }
-
-            if (!(event.getWhoClicked() instanceof Player)) {
-                return;
             }
 
             if (event.getClickedInventory() == null || !event.getClickedInventory().equals(getSellerInventory())) {
@@ -251,6 +283,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
                 if (limit <= 0) {
                     player.sendMessage(serverPluginName +
                             ChatColor.YELLOW + "Лимит продаж достигнут, необходимо подождать перед следующей продажей.");
+                    player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 2, 2);
                     event.setCancelled(true);
                     return;
                 }
@@ -261,6 +294,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
             if (!player.getInventory().containsAtLeast(itemInInventory, amountToSell)) {
                 player.sendMessage(serverPluginName +
                         ChatColor.YELLOW + "У вас нет необходимых предметов для продажи.");
+                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_HURT, 2, 2);
                 event.setCancelled(true);
                 return;
             }
@@ -279,6 +313,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
                         ChatColor.WHITE + " за " +
                         ChatColor.GOLD + bdPrice.doubleValue() +
                         ChatColor.WHITE + "!");
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_TRADE, 2, 2);
 
                 Inventory inventory = getSellerInventory();
                 inventory.removeItem(clickedItem);
@@ -286,7 +321,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
                 ItemStack newItem = clickedItem.clone();
                 ItemMeta newMeta = newItem.getItemMeta();
                 if (newMeta != null) {
-                    newMeta.setDisplayName(ChatColor.GREEN + newItem.getType().name() + ChatColor.WHITE);
+                    newMeta.setDisplayName(ChatColor.GREEN + getLocalizedItemName(clickedItem) + ChatColor.WHITE); // Получение локализованного имени
                     List<String> newLore = new ArrayList<>();
                     double lorePrice = price * 64;
                     newLore.add(ChatColor.GRAY + "-----------------------");

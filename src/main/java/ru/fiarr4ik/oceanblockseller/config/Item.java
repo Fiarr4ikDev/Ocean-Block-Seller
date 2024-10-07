@@ -13,7 +13,7 @@ import lombok.ToString;
 
         private String name;
         private int amount;
-        private int minPrice;
-        private int maxPrice;
+        private double minPrice;
+        private double maxPrice;
 
     }
