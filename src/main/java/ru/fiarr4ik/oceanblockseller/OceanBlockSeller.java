@@ -1,6 +1,5 @@
 package ru.fiarr4ik.oceanblockseller;
 
-import lombok.Getter;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
@@ -9,6 +8,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
@@ -17,22 +18,23 @@ import org.bukkit.plugin.java.JavaPlugin;
 import ru.fiarr4ik.oceanblockseller.command.ReloadTradesCommand;
 import ru.fiarr4ik.oceanblockseller.command.SellerCommand;
 import ru.fiarr4ik.oceanblockseller.command.SellerTabCompleter;
-import ru.fiarr4ik.oceanblockseller.utils.UtilityClass;
 
 import java.io.File;
 import java.time.LocalTime;
 
 import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory;
+import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.loadTrades;
 import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
 
     public final class OceanBlockSeller extends JavaPlugin implements Listener {
 
-        private final JavaPlugin plugin = this;
+        private static OceanBlockSeller plugin;
         private static Economy econ = null;
         private static Permission perms = null;
         private static Chat chat = null;
-        @Getter
         private static LocalTime time = LocalTime.of(4, 0, 0);
+        private static File configFile = new File(plugin.getDataFolder(), "config/config.yaml");
+        private static FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
 
         @Override
         public void onEnable() {
@@ -44,6 +46,9 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
             getCommand("reloadsell").setExecutor(new ReloadTradesCommand(this));
             getServer().getPluginManager().registerEvents(new SellerCommand(this), this);
             startTimer();
+            Player player = Bukkit.getPlayer(getServer().getConsoleSender().getName());
+            File file = new File(plugin.getDataFolder(), "config/items.json");
+            loadTrades(player, file);
         }
 
         private void startTimer() {
@@ -63,7 +68,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
 
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     File file = new File(plugin.getDataFolder(), "config/items.json");
-                    UtilityClass.loadTrades(p, file);
+                    loadTrades(p, file);
                     Location loc = p.getLocation();
                     p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 2, 2);
                 }
@@ -123,4 +128,15 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
             return perms;
         }
 
+        public static LocalTime getTime() {
+            return time;
+        }
+
+        public static File getConfigFile() {
+            return configFile;
+        }
+
+        public FileConfiguration getConfig() {
+            return config;
+        }
     }

@@ -19,8 +19,13 @@ import java.util.List;
 
 import static ru.fiarr4ik.oceanblockseller.command.SellerCommand.addItemToInventory;
 import static ru.fiarr4ik.oceanblockseller.command.SellerCommand.getRandomPrice;
+import static ru.fiarr4ik.oceanblockseller.utils.Chat.broadcast;
 
-    public class UtilityClass {
+public final class UtilityClass {
+
+        private UtilityClass() {
+
+        }
 
         private static Inventory sharedSellerInventory;
         private static final String SERVER_PLUGIN_NAME = ChatColor.AQUA + "OceanSeller | ";
@@ -29,15 +34,14 @@ import static ru.fiarr4ik.oceanblockseller.command.SellerCommand.getRandomPrice;
          * <a href="https://imgur.com/a/NwXtQ9K">Внешний вид продавца</a>
          */
         public static Inventory getSellerInventory() {
-
             if (sharedSellerInventory == null) {
-                sharedSellerInventory = Bukkit.createInventory(null, 54, "Продавец");
+                sharedSellerInventory = Bukkit.createInventory(null, 54, "Скупщик");
 
                 ItemStack redGlass = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
                 setItemStackName(redGlass, "§cЗакрыть");
 
                 ItemStack blackGlass = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
-                setItemStackName(blackGlass, " ");
+                setItemStackName(blackGlass, "");
 
                 ItemStack info = new ItemStack(Material.OAK_SIGN, 1);
                 setItemStackName(info, ChatColor.AQUA + "");
@@ -124,10 +128,10 @@ import static ru.fiarr4ik.oceanblockseller.command.SellerCommand.getRandomPrice;
                             addItemToInventory(inventory, itemStack, item.getAmount(), getRandomPrice(item.getMinPrice(), item.getMaxPrice()));
                         }
                     }
+                    broadcast(SERVER_PLUGIN_NAME + ChatColor.WHITE + "Скупщик обновил свои лимиты (или даже товары)");
                     for (Player players : Bukkit.getOnlinePlayers()) {
                         Location location = players.getLocation();
-                        players.playSound(location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 2, 2);
-                        player.sendMessage(SERVER_PLUGIN_NAME + ChatColor.WHITE + "Скупщик обновил свои товары и лимиты");
+                        players.playSound(location, Sound.ENTITY_CAT_STRAY_AMBIENT, 1, 1);
                     }
                 }
             } catch (IOException e) {
