@@ -1,4 +1,4 @@
-package ru.fiarr4ik.oceanblockseller.config;
+package ru.fiarr4ik.oceanblockseller.dto;
 
     public class Item {
 
@@ -29,23 +29,11 @@ package ru.fiarr4ik.oceanblockseller.config;
             return amount;
         }
 
-        public void setAmount(int amount) {
-            this.amount = amount;
-        }
-
         public double getMinPrice() {
             return minPrice;
         }
 
-        public void setMinPrice(double minPrice) {
-            this.minPrice = minPrice;
-        }
-
         public double getMaxPrice() {
             return maxPrice;
-        }
-
-        public void setMaxPrice(double maxPrice) {
-            this.maxPrice = maxPrice;
         }
     }

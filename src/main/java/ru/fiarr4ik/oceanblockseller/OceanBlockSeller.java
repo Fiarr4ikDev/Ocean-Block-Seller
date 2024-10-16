@@ -1,13 +1,9 @@
 package ru.fiarr4ik.oceanblockseller;
 
-import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
-import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -30,16 +26,24 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
 
         private static OceanBlockSeller plugin;
         private static Economy econ = null;
-        private static Permission perms = null;
-        private static Chat chat = null;
-        private static LocalTime time = LocalTime.of(4, 0, 0);
-        private static File configFile = new File(plugin.getDataFolder(), "config/config.yaml");
-        private static FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+        private static LocalTime time;
+        private static FileConfiguration config;
 
+        /**
+         * Инициализация обьектов при запуске плагина.
+         */
         @Override
         public void onEnable() {
-            setupEconomy();
-            setupSellerInventory();
+            getLogger().info("OceanBlockSeller запущен (удивительно)");
+            //inits
+            plugin = this;
+            File configFile = new File(plugin.getDataFolder(), "config/config.yaml");
+            File itemsFile = new File(plugin.getDataFolder(), "config/items.json");
+            config = YamlConfiguration.loadConfiguration(configFile);
+            time = LocalTime.of(config.getInt("timer.h"), config.getInt("timer.m"), config.getInt("timer.s"));
+
+            setupEconomy(); //Установка экономики
+            setupSellerInventory(); //pre-init инвентаря
 
             getCommand("seller").setExecutor(new SellerCommand(this));
             getCommand("seller").setTabCompleter(new SellerTabCompleter());
@@ -47,8 +51,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
             getServer().getPluginManager().registerEvents(new SellerCommand(this), this);
             startTimer();
             Player player = Bukkit.getPlayer(getServer().getConsoleSender().getName());
-            File file = new File(plugin.getDataFolder(), "config/items.json");
-            loadTrades(player, file);
+            loadTrades(player, itemsFile);
         }
 
         private void startTimer() {
@@ -69,10 +72,8 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     File file = new File(plugin.getDataFolder(), "config/items.json");
                     loadTrades(p, file);
-                    Location loc = p.getLocation();
-                    p.playSound(loc, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 2, 2);
                 }
-                time = LocalTime.of(4, 0, 0);
+                time = LocalTime.of(config.getInt("timer.h"), config.getInt("timer.m"), config.getInt("timer.s"));
             }
         }
 
@@ -94,27 +95,6 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
             return econ != null;
         }
 
-        private boolean setupChat() {
-            RegisteredServiceProvider<Chat> rsp = getServer().getServicesManager().getRegistration(Chat.class);
-            if (rsp == null) {
-                getLogger().warning("Chat service provider is not registered!");
-                return false;
-            }
-
-            chat = rsp.getProvider();
-            if (chat == null) {
-                getLogger().warning("Chat service provider is null!");
-            }
-
-            return chat != null;
-        }
-
-        private boolean setupPermissions() {
-            RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
-            perms = rsp.getProvider();
-            return perms != null;
-        }
-
         @Override
         public void onDisable() {
 
@@ -124,16 +104,8 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.setItemStackName;
             return econ;
         }
 
-        public static Permission getPermissions() {
-            return perms;
-        }
-
         public static LocalTime getTime() {
             return time;
-        }
-
-        public static File getConfigFile() {
-            return configFile;
         }
 
         public FileConfiguration getConfig() {

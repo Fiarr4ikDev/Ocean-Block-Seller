@@ -1,8 +1,6 @@
 package ru.fiarr4ik.oceanblockseller.utils;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.regex.Matcher;
@@ -34,14 +32,4 @@ import java.util.regex.Pattern;
             p.sendMessage(color(msg));
         }
 
-        public static void sendMessage(CommandSender s, String msg) {
-            s.sendMessage(color(msg));
-        }
-
-        public static void broadcast(String msg) {
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                sendMessage(p, msg);
-            }
-
-        }
     }

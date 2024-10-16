@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import ru.fiarr4ik.oceanblockseller.config.Item;
+import ru.fiarr4ik.oceanblockseller.dto.Item;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +19,6 @@ import java.util.List;
 
 import static ru.fiarr4ik.oceanblockseller.command.SellerCommand.addItemToInventory;
 import static ru.fiarr4ik.oceanblockseller.command.SellerCommand.getRandomPrice;
-import static ru.fiarr4ik.oceanblockseller.utils.Chat.broadcast;
 
 public final class UtilityClass {
 
@@ -39,33 +38,21 @@ public final class UtilityClass {
 
                 ItemStack redGlass = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
                 setItemStackName(redGlass, "§cЗакрыть");
+                sharedSellerInventory.setItem(49, redGlass);
 
                 ItemStack blackGlass = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
-                setItemStackName(blackGlass, "");
-
-                ItemStack info = new ItemStack(Material.OAK_SIGN, 1);
-                setItemStackName(info, ChatColor.AQUA + "");
-
+                setItemStackName(blackGlass, " ");
                 for (int i = 0; i <= 8; i++) {
                     sharedSellerInventory.setItem(i, blackGlass);
                 }
-                sharedSellerInventory.setItem(9, blackGlass);
-                sharedSellerInventory.setItem(17, blackGlass);
-                sharedSellerInventory.setItem(18, blackGlass);
-                sharedSellerInventory.setItem(26, blackGlass);
-                sharedSellerInventory.setItem(27, blackGlass);
-                sharedSellerInventory.setItem(35, blackGlass);
-                sharedSellerInventory.setItem(36, blackGlass);
-                sharedSellerInventory.setItem(44, blackGlass);
-                sharedSellerInventory.setItem(45, blackGlass);
-                sharedSellerInventory.setItem(46, blackGlass);
-                sharedSellerInventory.setItem(47, info);
-                sharedSellerInventory.setItem(48, blackGlass);
-                sharedSellerInventory.setItem(49, redGlass);
-                sharedSellerInventory.setItem(50, blackGlass);
-                sharedSellerInventory.setItem(52, blackGlass);
-                sharedSellerInventory.setItem(53, blackGlass);
+                int[] blackGlassSlots = new int[] {9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 48, 50, 52, 53};
+                for (Integer i : blackGlassSlots) {
+                    sharedSellerInventory.setItem(i, blackGlass);
+                }
 
+                ItemStack info = new ItemStack(Material.OAK_SIGN, 1);
+                setItemStackName(info, ChatColor.AQUA + "");
+                sharedSellerInventory.setItem(47, info);
             }
 
             return sharedSellerInventory;
@@ -122,14 +109,13 @@ public final class UtilityClass {
 
                     for (Item item : items) {
                         Material material = Material.getMaterial(item.getName().toUpperCase());
+                        assert material != null;
                         ItemStack itemStack = new ItemStack(material);
-                        if (material != null) {
-
-                            addItemToInventory(inventory, itemStack, item.getAmount(), getRandomPrice(item.getMinPrice(), item.getMaxPrice()));
-                        }
+                        addItemToInventory(inventory, itemStack, item.getAmount(), getRandomPrice(item.getMinPrice(), item.getMaxPrice()));
                     }
-                    broadcast(SERVER_PLUGIN_NAME + ChatColor.WHITE + "Скупщик обновил свои лимиты (или даже товары)");
+
                     for (Player players : Bukkit.getOnlinePlayers()) {
+                        players.sendTitle("OceanSeller", "Скупщик обновил свои лимиты (или даже товары)", 10, 70, 20);
                         Location location = players.getLocation();
                         players.playSound(location, Sound.ENTITY_CAT_STRAY_AMBIENT, 1, 1);
                     }
