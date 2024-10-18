@@ -10,8 +10,6 @@ import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,7 +20,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.fiarr4ik.oceanblockseller.dto.Item;
+import ru.fiarr4ik.oceanblockseller.service.ConfigService;
 import ru.fiarr4ik.oceanblockseller.utils.Chat;
+import ru.fiarr4ik.oceanblockseller.utils.UtilityClass;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Random;
 
 import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
-import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory;
 
     /**
      * Обработчик команд и слушатель событий для команды продавца и взаимодействия с инвентарём.
@@ -44,6 +43,8 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
         private final Economy economy;
         private final JavaPlugin plugin;
         private final ObjectMapper objectMapper;
+        private final ConfigService configService;
+        private final UtilityClass utilityClass;
 
         /**
          * Конструктор для инициализации экземпляра экономики.
@@ -54,6 +55,8 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
             this.economy = getEconomy();
             this.plugin = plugin;
             this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+            this.configService = new ConfigService(plugin);
+            this.utilityClass = new UtilityClass(plugin);
         }
 
         /**
@@ -67,17 +70,15 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
          */
         @Override
         public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-            File configFile = new File(plugin.getDataFolder(), "config/config.yaml");
-            FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
             if (sender instanceof Player) {
                 Player player = (Player) sender;
                 if (command.getName().equalsIgnoreCase("seller")) {
                     if (args.length == 0) {
                         if (player.hasPermission("itembuyer.seller")) {
-                            player.openInventory(getSellerInventory());
+                            player.openInventory(utilityClass.getSellerInventory());
                             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_YES, 1, 1);
                         } else {
-                            Chat.sendMessage(player, config.getString("messages.noPermission"));
+                            Chat.sendMessage(player, configService.getConfig().getString("messages.noPermission"));
                         }
                     } else if (args.length == 5 && args[0].equalsIgnoreCase("sell")) {
                         if (player.hasPermission("itembuyer.selleredit")) {
@@ -88,26 +89,27 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
 
                                 Material material = Material.getMaterial(args[4].toUpperCase());
                                 if (material == null) {
-                                    Chat.sendMessage(player, config.getString("") + args[4]);
+                                    Chat.sendMessage(player, configService.getConfig().getString("") + args[4]);
                                     return true;
                                 }
                                 if (limit <= 0) {
-                                    Chat.sendMessage(player, config.getString("messages.sellLimitError"));
+                                    Chat.sendMessage(player, configService.getConfig().getString("messages.sellLimitError"));
                                 } else {
                                     if (minPrice < 0.1 || maxPrice < 0.1) {
-                                        Chat.sendMessage(player, config.getString("messages.priceError"));
+                                        Chat.sendMessage(player, configService.getConfig().getString("messages.priceError"));
                                     } else {
                                         if (minPrice > maxPrice) {
-                                            Chat.sendMessage(player, config.getString("messages.minPriceGreater"));
+                                            Chat.sendMessage(player, configService.getConfig().getString("messages.minPriceGreater"));
                                         } else {
                                             ItemStack itemId = new ItemStack(material);
 
                                             if (itemId.getType() != Material.AIR) {
                                                 double price = getRandomPrice(minPrice, maxPrice);
 
-                                                Inventory inventory = getSellerInventory();
+                                                Inventory inventory = utilityClass.getSellerInventory();
                                                 addItemToInventory(inventory, itemId, limit, price);
-                                                Chat.sendMessage(player, config.getString("messages.sellItemAdded") + price + config.getString("messages.sellItemLimit") + limit);
+                                                Chat.sendMessage(player, configService.getConfig().getString("messages.sellItemAdded") +
+                                                        price + configService.getConfig().getString("messages.sellItemLimit") + limit);
 
                                                 saveItemToConfig(material.name().toLowerCase(), limit, minPrice, maxPrice);
                                             }
@@ -115,13 +117,13 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
                                     }
                                 }
                             } catch (NumberFormatException e) {
-                                Chat.sendMessage(player, config.getString("messages.priceMustBeNumbers"));
+                                Chat.sendMessage(player, configService.getConfig().getString("messages.priceMustBeNumbers"));
                             }
                         } else {
-                            Chat.sendMessage(player, config.getString("messages.noPermission"));
+                            Chat.sendMessage(player, configService.getConfig().getString("messages.noPermission"));
                         }
                     } else {
-                        Chat.sendMessage(player, config.getString("messages.commandPrintError"));
+                        Chat.sendMessage(player, configService.getConfig().getString("messages.commandPrintError"));
                     }
                 }
             }
@@ -220,8 +222,6 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
 
         @EventHandler
         public void onInventoryClick(InventoryClickEvent event) {
-            File configFile = new File(plugin.getDataFolder(), "config/config.yaml");
-            FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
             if (!(event.getWhoClicked() instanceof Player)) {
                 return;
             }
@@ -237,7 +237,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
                 }
             }
 
-            if (event.getClickedInventory() == null || !event.getClickedInventory().equals(getSellerInventory())) {
+            if (event.getClickedInventory() == null || !event.getClickedInventory().equals(utilityClass.getSellerInventory())) {
                 return;
             }
 
@@ -271,7 +271,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
                 limit = Integer.parseInt(limitParts[1].replaceAll("§[0-9a-fk-or]", ""));
                 price = Double.parseDouble(priceParts[1].replaceAll("§[0-9a-fk-or]", ""));
             } catch (NumberFormatException e) {
-                Chat.sendMessage(player, config.getString("messages.sellErrorDetails"));
+                Chat.sendMessage(player, configService.getConfig().getString("messages.sellErrorDetails"));
                 e.printStackTrace();
                 return;
             }
@@ -280,7 +280,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
 
             if (amountToSell > limit) {
                 if (limit <= 0) {
-                    Chat.sendMessage(player, config.getString("messages.limitReached"));
+                    Chat.sendMessage(player, configService.getConfig().getString("messages.limitReached"));
                     player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 2, 2);
                     event.setCancelled(true);
                     return;
@@ -290,7 +290,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
 
             ItemStack itemInInventory = new ItemStack(clickedItem.getType(), amountToSell);
             if (!player.getInventory().containsAtLeast(itemInInventory, amountToSell)) {
-                Chat.sendMessage(player, config.getString("messages.sellNoItems"));
+                Chat.sendMessage(player, configService.getConfig().getString("messages.sellNoItems"));
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_HURT, 2, 2);
                 event.setCancelled(true);
                 return;
@@ -302,10 +302,16 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
 
             if (response.transactionSuccess()) {
                 player.getInventory().removeItem(new ItemStack(clickedItem.getType(), amountToSell));
-                Chat.sendMessage(player, config.getString("messages.sellSuccess") + amountToSell + " " + clickedItem.getType().name() + config.getString("messages.sellAmount") + bdPrice.doubleValue());
+                Chat.sendMessage(player,
+                        configService.getConfig().getString("messages.sellSuccess") +
+                                amountToSell +
+                                " " +
+                                clickedItem.getType().name() +
+                                configService.getConfig().getString("messages.sellAmount") +
+                                bdPrice.doubleValue());
                 player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_TRADE, 2, 2);
 
-                Inventory inventory = getSellerInventory();
+                Inventory inventory = utilityClass.getSellerInventory();
                 inventory.removeItem(clickedItem);
 
                 ItemStack newItem = clickedItem.clone();
@@ -328,7 +334,7 @@ import static ru.fiarr4ik.oceanblockseller.utils.UtilityClass.getSellerInventory
                 }
                 addItemToInventory(inventory, newItem, limit, price);
             } else {
-                Chat.sendMessage(player, config.getString("messages.sellError") + response.errorMessage);
+                Chat.sendMessage(player, configService.getConfig().getString("messages.sellError") + response.errorMessage);
             }
 
             event.setCancelled(true);

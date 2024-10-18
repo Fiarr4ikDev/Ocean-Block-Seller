@@ -3,7 +3,6 @@ package ru.fiarr4ik.oceanblockseller.utils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -11,7 +10,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
 import ru.fiarr4ik.oceanblockseller.dto.Item;
+import ru.fiarr4ik.oceanblockseller.service.ConfigService;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,24 +21,24 @@ import java.util.List;
 import static ru.fiarr4ik.oceanblockseller.command.SellerCommand.addItemToInventory;
 import static ru.fiarr4ik.oceanblockseller.command.SellerCommand.getRandomPrice;
 
-public final class UtilityClass {
-
-        private UtilityClass() {
-
-        }
+    public final class UtilityClass {
 
         private static Inventory sharedSellerInventory;
-        private static final String SERVER_PLUGIN_NAME = ChatColor.AQUA + "OceanSeller | ";
+        private final ConfigService configService;
+
+        public UtilityClass(JavaPlugin plugin) {
+            configService = new ConfigService(plugin);
+        }
 
         /**
          * <a href="https://imgur.com/a/NwXtQ9K">Внешний вид продавца</a>
          */
-        public static Inventory getSellerInventory() {
+        public Inventory getSellerInventory() {
             if (sharedSellerInventory == null) {
                 sharedSellerInventory = Bukkit.createInventory(null, 54, "Скупщик");
 
                 ItemStack redGlass = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
-                setItemStackName(redGlass, "§cЗакрыть");
+                setItemStackName(redGlass, configService.getConfig().getString("messages.closeButton"));
                 sharedSellerInventory.setItem(49, redGlass);
 
                 ItemStack blackGlass = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
@@ -51,7 +52,7 @@ public final class UtilityClass {
                 }
 
                 ItemStack info = new ItemStack(Material.OAK_SIGN, 1);
-                setItemStackName(info, ChatColor.AQUA + "");
+                setItemStackName(info, configService.getConfig().getString("messages.sellerDescription"));
                 sharedSellerInventory.setItem(47, info);
             }
 
@@ -96,13 +97,13 @@ public final class UtilityClass {
          * @param player игрок
          * @param file - путь до файла с конфигом
          */
-        public static void loadTrades(Player player, File file) {
+        public void loadTrades(Player player, File file) {
             ObjectMapper objectMapper = new ObjectMapper();
 
             try {
                 List<Item> items = objectMapper.readValue(file, new TypeReference<List<Item>>() {});
                 if (items.size() > 28) {
-                    player.sendMessage(SERVER_PLUGIN_NAME + ChatColor.RED + " Количество предметов в конфиге больше вместительности скупщика. (28)");
+                    player.sendMessage(configService.getConfig().getString(configService.getConfig().getString("itemsByConfigMoreMaxInventory")));
                 } else {
                     clearInventory();
                     Inventory inventory = getSellerInventory();
@@ -115,7 +116,7 @@ public final class UtilityClass {
                     }
 
                     for (Player players : Bukkit.getOnlinePlayers()) {
-                        players.sendTitle("OceanSeller", "Скупщик обновил свои лимиты (или даже товары)", 10, 70, 20);
+                        players.sendTitle(configService.getConfig().getString("messages.sellerReloadTitle"), configService.getConfig().getString("messages.sellerReloadSubTitle"), 10, 70, 20);
                         Location location = players.getLocation();
                         players.playSound(location, Sound.ENTITY_CAT_STRAY_AMBIENT, 1, 1);
                     }
