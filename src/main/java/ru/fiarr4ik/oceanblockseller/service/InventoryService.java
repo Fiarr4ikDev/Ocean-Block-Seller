@@ -7,7 +7,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-    public class InventoryService {
+import java.util.Objects;
+
+public class InventoryService {
 
         private static Inventory sharedSellerInventory;
         private final ConfigService configService;
@@ -20,18 +22,30 @@ import org.bukkit.plugin.java.JavaPlugin;
             if (sharedSellerInventory == null) {
                 sharedSellerInventory = Bukkit.createInventory(null, 54, "Скупщик");
 
-                ItemStack redGlass = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
-                setItemStackName(redGlass, configService.getConfig().getString("messages.closeButton"));
-                sharedSellerInventory.setItem(49, redGlass);
-
-                ItemStack blackGlass = new ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1);
-                setItemStackName(blackGlass, " ");
-                for (int i = 0; i <= 8; i++) {
-                    sharedSellerInventory.setItem(i, blackGlass);
+                String mainItemName = Objects.requireNonNull(configService.getConfig().getString("gui.mainItem"), "mainItem не найден в конфигурации");
+                Material mainMaterial = getGlassMaterial(mainItemName);
+                if (mainMaterial == null) {
+                    throw new IllegalArgumentException("Неправильный материал для mainItem: " + mainItemName);
                 }
-                int[] blackGlassSlots = new int[] {9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 48, 50, 52, 53};
+
+                String exitButtonName = Objects.requireNonNull(configService.getConfig().getString("gui.exitButtonItem"), "exitButtonItem не найден в конфигурации");
+                Material exitButtonMaterial = getGlassMaterial(exitButtonName);
+                if (exitButtonMaterial == null) {
+                    throw new IllegalArgumentException("Неправильный материал для exitButtonItem: " + exitButtonName);
+                }
+
+                ItemStack exitButton = new ItemStack(exitButtonMaterial, 1);
+                setItemStackName(exitButton, configService.getConfig().getString("messages.closeButton"));
+                sharedSellerInventory.setItem(49, exitButton);
+
+                ItemStack mainItem = new ItemStack(mainMaterial, 1);
+                setItemStackName(mainItem, " ");
+                for (int i = 0; i <= 8; i++) {
+                    sharedSellerInventory.setItem(i, mainItem);
+                }
+                int[] blackGlassSlots = new int[]{9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 48, 50, 52, 53};
                 for (Integer i : blackGlassSlots) {
-                    sharedSellerInventory.setItem(i, blackGlass);
+                    sharedSellerInventory.setItem(i, mainItem);
                 }
 
                 ItemStack info = new ItemStack(Material.OAK_SIGN, 1);
@@ -62,6 +76,44 @@ import org.bukkit.plugin.java.JavaPlugin;
             if (meta != null) {
                 meta.setDisplayName(name);
                 item.setItemMeta(meta);
+            }
+        }
+
+        private static Material getGlassMaterial(String name) {
+
+            switch (name) {
+                case "red_glass":
+                    return Material.RED_STAINED_GLASS_PANE;
+                case "orange_glass":
+                    return Material.ORANGE_STAINED_GLASS_PANE;
+                case "yellow_glass":
+                    return Material.YELLOW_STAINED_GLASS_PANE;
+                case "lime_glass":
+                    return Material.LIME_STAINED_GLASS_PANE;
+                case "green_glass":
+                    return Material.GREEN_STAINED_GLASS_PANE;
+                case "cyan_glass":
+                    return Material.CYAN_STAINED_GLASS_PANE;
+                case "light_blue_glass":
+                    return Material.LIGHT_BLUE_STAINED_GLASS_PANE;
+                case "blue_glass":
+                    return Material.BLUE_STAINED_GLASS_PANE;
+                case "purple_glass":
+                    return Material.PURPLE_STAINED_GLASS_PANE;
+                case "magenta_glass":
+                    return Material.MAGENTA_STAINED_GLASS_PANE;
+                case "pink_glass":
+                    return Material.PINK_STAINED_GLASS_PANE;
+                case "white_glass":
+                    return Material.WHITE_STAINED_GLASS_PANE;
+                case "gray_glass":
+                    return Material.GRAY_STAINED_GLASS_PANE;
+                case "light_gray_glass":
+                    return Material.LIGHT_GRAY_STAINED_GLASS_PANE;
+                case "black_glass":
+                    return Material.BLACK_STAINED_GLASS_PANE;
+                default:
+                    return null;
             }
         }
 
