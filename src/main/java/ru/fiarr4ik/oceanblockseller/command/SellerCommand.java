@@ -20,9 +20,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import ru.fiarr4ik.oceanblockseller.dto.Item;
+import ru.fiarr4ik.oceanblockseller.service.ChatService;
 import ru.fiarr4ik.oceanblockseller.service.ConfigService;
-import ru.fiarr4ik.oceanblockseller.utils.Chat;
-import ru.fiarr4ik.oceanblockseller.utils.UtilityClass;
+import ru.fiarr4ik.oceanblockseller.service.EconomyService;
+import ru.fiarr4ik.oceanblockseller.service.InventoryService;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -33,18 +34,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
-
     /**
      * Обработчик команд и слушатель событий для команды продавца и взаимодействия с инвентарём.
      */
     public class SellerCommand implements CommandExecutor, Listener {
 
-        private final Economy economy;
         private final JavaPlugin plugin;
+
         private final ObjectMapper objectMapper;
         private final ConfigService configService;
-        private final UtilityClass utilityClass;
+        private final ChatService chatService;
+        private final InventoryService inventoryService;
+        private final EconomyService economyService;
+        private Economy economy;
 
         /**
          * Конструктор для инициализации экземпляра экономики.
@@ -52,11 +54,13 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
          * @param plugin Экземпляр плагина, используемый для инициализации экономики.
          */
         public SellerCommand(JavaPlugin plugin) {
-            this.economy = getEconomy();
-            this.plugin = plugin;
             this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
             this.configService = new ConfigService(plugin);
-            this.utilityClass = new UtilityClass(plugin);
+            this.chatService = new ChatService();
+            this.inventoryService = new InventoryService(plugin);
+            this.economyService = new EconomyService(plugin);
+            this.economy = economyService.getEconomy();
+            this.plugin = plugin;
         }
 
         /**
@@ -75,10 +79,10 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
                 if (command.getName().equalsIgnoreCase("seller")) {
                     if (args.length == 0) {
                         if (player.hasPermission("itembuyer.seller")) {
-                            player.openInventory(utilityClass.getSellerInventory());
+                            player.openInventory(inventoryService.getSellerInventory());
                             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_YES, 1, 1);
                         } else {
-                            Chat.sendMessage(player, configService.getConfig().getString("messages.noPermission"));
+                            chatService.sendMessage(player, configService.getConfig().getString("messages.noPermission"));
                         }
                     } else if (args.length == 5 && args[0].equalsIgnoreCase("sell")) {
                         if (player.hasPermission("itembuyer.selleredit")) {
@@ -89,26 +93,26 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
 
                                 Material material = Material.getMaterial(args[4].toUpperCase());
                                 if (material == null) {
-                                    Chat.sendMessage(player, configService.getConfig().getString("") + args[4]);
+                                    chatService.sendMessage(player, configService.getConfig().getString("") + args[4]);
                                     return true;
                                 }
                                 if (limit <= 0) {
-                                    Chat.sendMessage(player, configService.getConfig().getString("messages.sellLimitError"));
+                                    chatService.sendMessage(player, configService.getConfig().getString("messages.sellLimitError"));
                                 } else {
                                     if (minPrice < 0.1 || maxPrice < 0.1) {
-                                        Chat.sendMessage(player, configService.getConfig().getString("messages.priceError"));
+                                        chatService.sendMessage(player, configService.getConfig().getString("messages.priceError"));
                                     } else {
                                         if (minPrice > maxPrice) {
-                                            Chat.sendMessage(player, configService.getConfig().getString("messages.minPriceGreater"));
+                                            chatService.sendMessage(player, configService.getConfig().getString("messages.minPriceGreater"));
                                         } else {
                                             ItemStack itemId = new ItemStack(material);
 
                                             if (itemId.getType() != Material.AIR) {
                                                 double price = getRandomPrice(minPrice, maxPrice);
 
-                                                Inventory inventory = utilityClass.getSellerInventory();
+                                                Inventory inventory = inventoryService.getSellerInventory();
                                                 addItemToInventory(inventory, itemId, limit, price);
-                                                Chat.sendMessage(player, configService.getConfig().getString("messages.sellItemAdded") +
+                                                chatService.sendMessage(player, configService.getConfig().getString("messages.sellItemAdded") +
                                                         price + configService.getConfig().getString("messages.sellItemLimit") + limit);
 
                                                 saveItemToConfig(material.name().toLowerCase(), limit, minPrice, maxPrice);
@@ -117,13 +121,13 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
                                     }
                                 }
                             } catch (NumberFormatException e) {
-                                Chat.sendMessage(player, configService.getConfig().getString("messages.priceMustBeNumbers"));
+                                chatService.sendMessage(player, configService.getConfig().getString("messages.priceMustBeNumbers"));
                             }
                         } else {
-                            Chat.sendMessage(player, configService.getConfig().getString("messages.noPermission"));
+                            chatService.sendMessage(player, configService.getConfig().getString("messages.noPermission"));
                         }
                     } else {
-                        Chat.sendMessage(player, configService.getConfig().getString("messages.commandPrintError"));
+                        chatService.sendMessage(player, configService.getConfig().getString("messages.commandPrintError"));
                     }
                 }
             }
@@ -237,7 +241,7 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
                 }
             }
 
-            if (event.getClickedInventory() == null || !event.getClickedInventory().equals(utilityClass.getSellerInventory())) {
+            if (event.getClickedInventory() == null || !event.getClickedInventory().equals(inventoryService.getSellerInventory())) {
                 return;
             }
 
@@ -271,8 +275,7 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
                 limit = Integer.parseInt(limitParts[1].replaceAll("§[0-9a-fk-or]", ""));
                 price = Double.parseDouble(priceParts[1].replaceAll("§[0-9a-fk-or]", ""));
             } catch (NumberFormatException e) {
-                Chat.sendMessage(player, configService.getConfig().getString("messages.sellErrorDetails"));
-                e.printStackTrace();
+                chatService.sendMessage(player, configService.getConfig().getString("messages.sellErrorDetails"));
                 return;
             }
 
@@ -280,7 +283,7 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
 
             if (amountToSell > limit) {
                 if (limit <= 0) {
-                    Chat.sendMessage(player, configService.getConfig().getString("messages.limitReached"));
+                    chatService.sendMessage(player, configService.getConfig().getString("messages.limitReached"));
                     player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 2, 2);
                     event.setCancelled(true);
                     return;
@@ -290,7 +293,7 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
 
             ItemStack itemInInventory = new ItemStack(clickedItem.getType(), amountToSell);
             if (!player.getInventory().containsAtLeast(itemInInventory, amountToSell)) {
-                Chat.sendMessage(player, configService.getConfig().getString("messages.sellNoItems"));
+                chatService.sendMessage(player, configService.getConfig().getString("messages.sellNoItems"));
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_HURT, 2, 2);
                 event.setCancelled(true);
                 return;
@@ -302,7 +305,7 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
 
             if (response.transactionSuccess()) {
                 player.getInventory().removeItem(new ItemStack(clickedItem.getType(), amountToSell));
-                Chat.sendMessage(player,
+                chatService.sendMessage(player,
                         configService.getConfig().getString("messages.sellSuccess") +
                                 amountToSell +
                                 " " +
@@ -311,7 +314,7 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
                                 bdPrice.doubleValue());
                 player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_TRADE, 2, 2);
 
-                Inventory inventory = utilityClass.getSellerInventory();
+                Inventory inventory = inventoryService.getSellerInventory();
                 inventory.removeItem(clickedItem);
 
                 ItemStack newItem = clickedItem.clone();
@@ -334,7 +337,7 @@ import static ru.fiarr4ik.oceanblockseller.OceanBlockSeller.getEconomy;
                 }
                 addItemToInventory(inventory, newItem, limit, price);
             } else {
-                Chat.sendMessage(player, configService.getConfig().getString("messages.sellError") + response.errorMessage);
+                chatService.sendMessage(player, configService.getConfig().getString("messages.sellError") + response.errorMessage);
             }
 
             event.setCancelled(true);

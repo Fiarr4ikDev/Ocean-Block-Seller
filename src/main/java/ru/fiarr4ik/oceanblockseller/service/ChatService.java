@@ -1,4 +1,4 @@
-package ru.fiarr4ik.oceanblockseller.utils;
+package ru.fiarr4ik.oceanblockseller.service;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -6,13 +6,13 @@ import org.bukkit.entity.Player;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-    public final class Chat {
+    public class ChatService {
 
-        private Chat() {
+        public ChatService() {
 
         }
 
-        public static String color(String from) {
+        public String color(String from) {
             Pattern pattern = Pattern.compile("#[a-fA-F0-9]{6}");
             for (Matcher matcher = pattern.matcher(from); matcher.find(); matcher = pattern.matcher(from)) {
                 String hexCode = from.substring(matcher.start(), matcher.end());
@@ -28,8 +28,7 @@ import java.util.regex.Pattern;
             return ChatColor.translateAlternateColorCodes('&', from);
         }
 
-        public static void sendMessage(Player p, String msg) {
+        public void sendMessage(Player p, String msg) {
             p.sendMessage(color(msg));
         }
-
     }
