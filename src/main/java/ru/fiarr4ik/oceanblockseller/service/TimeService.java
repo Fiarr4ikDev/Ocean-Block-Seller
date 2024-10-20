@@ -16,12 +16,14 @@ import java.time.LocalTime;
         private final InventoryService inventoryService;
         private final TradeService tradeService;
         private final ConfigService configService;
+        private final File itemConfig;
 
         public TimeService(OceanBlockSeller plugin) {
             this.plugin = plugin;
             this.inventoryService = new InventoryService(plugin);
             this.tradeService = new TradeService(plugin);
             this.configService = new ConfigService(plugin);
+            this.itemConfig = configService.getItemConfig();
 
             time = LocalTime.of(
                     configService.getConfig().getInt("timer.h"),
@@ -44,8 +46,7 @@ import java.time.LocalTime;
                 time = time.minusSeconds(1);
             } else {
                 for (Player p : Bukkit.getOnlinePlayers()) {
-                    File file = new File(plugin.getDataFolder(), "config/items.json");
-                    tradeService.loadTrades(p, file);
+                    tradeService.loadTrades(p, itemConfig);
                 }
                 resetTimer();
             }

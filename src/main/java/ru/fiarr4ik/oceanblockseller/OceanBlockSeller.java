@@ -18,6 +18,7 @@ import java.io.File;
     public final class OceanBlockSeller extends JavaPlugin implements Listener {
 
         private static OceanBlockSeller plugin;
+        private final File itemConfig;
         private final ConfigService configService;
         private final TradeService tradeService;
         private final InventoryService inventoryService;
@@ -29,6 +30,7 @@ import java.io.File;
             this.tradeService = new TradeService(this);
             this.inventoryService = new InventoryService(this);
             this.timeService = new TimeService(this);
+            this.itemConfig = configService.getItemConfig();
         }
 
         @Override
@@ -37,7 +39,6 @@ import java.io.File;
             plugin = this;
             inventoryService.getSellerInventory();
             economyService = new EconomyService(this);
-            File itemsFile = new File(plugin.getDataFolder(), "config/items.json");
 
             getCommand("seller").setExecutor(new SellerCommand(this));
             getCommand("seller").setTabCompleter(new SellerTabCompleter());
@@ -46,7 +47,7 @@ import java.io.File;
 
             timeService.startTimer();
             Player player = Bukkit.getPlayer(getServer().getConsoleSender().getName());
-            tradeService.loadTrades(player, itemsFile);
+            tradeService.loadTrades(player, itemConfig);
         }
 
     }

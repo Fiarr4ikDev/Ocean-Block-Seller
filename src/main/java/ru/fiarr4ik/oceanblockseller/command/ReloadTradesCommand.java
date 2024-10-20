@@ -13,23 +13,22 @@ import java.util.Objects;
 
     public class ReloadTradesCommand implements CommandExecutor {
 
-        private final JavaPlugin plugin;
         private final ConfigService configService;
         private final TradeService tradeService;
+        private final File itemConfig;
 
         public ReloadTradesCommand(JavaPlugin plugin) {
-            this.plugin = plugin;
             this.configService = new ConfigService(plugin);
             this.tradeService = new TradeService(plugin);
+            this.itemConfig = configService.getItemConfig();
         }
 
         @Override
         public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
             Player player = (Player) sender;
-            File file = new File(plugin.getDataFolder(), "config/items.json");
 
             if (player.hasPermission("itembuyer.selleredit")) {
-                tradeService.loadTrades(player, file);
+                tradeService.loadTrades(player, itemConfig);
             } else {
                 player.sendMessage(Objects.requireNonNull(configService.getConfig().getString("messages.noPermission")));
             }

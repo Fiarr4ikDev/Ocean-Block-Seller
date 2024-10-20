@@ -1,0 +1,53 @@
+#Сообщения плагина
+messages:
+  wrongMaterial: "Неверный материал: "
+  noPermission: "У вас недостаточно прав на использование команды."
+  commandOnlyForPlayers: "Эта команда только для игроков."
+  sellLimitError: "Лимит не может быть меньше или равен нулю."
+  priceError: "Минимальная и максимальная цены должны быть больше 0.1."
+  minPriceGreater: "Минимальная цена не может быть больше максимальной."
+  sellItemAdded: "Предмет добавлен в инвентарь продавца с ценой: "
+  sellItemLimit: " и лимитом: "
+  priceMustBeNumbers: "Параметры цены и лимита должны быть числами."
+  limitReached: "Лимит продаж достигнут, необходимо подождать перед следующей продажей."
+  sellSuccess: "Вы продали "
+  sellAmount: " за "
+  sellNoItems: "У вас нет необходимых предметов для продажи."
+  sellError: "Ошибка при продаже предмета:"
+  sellErrorDetails: "Ошибка при получении лимита или цены предмета."
+  commandPrintError: "Неправильное использование команды. Правильный формат:  /seller sell <limit> <minprice> <maxprice> <itemName>"
+  reloadSuccess: "Скупщик обновил свои товары и лимиты"
+  timeToUpdateTimer: "Время до обновления таймера"
+  itemsByConfigMoreMaxInventory: "Количество предметов в конфиге больше вместительности скупщика. (28)"
+  sellerDescription: "Описание скупщика"
+  sellerReloadTitle: "OceanSeller"
+  sellerReloadSubTitle: "Скупщик обновил свои лимиты (или даже товары)"
+  closeButton: "§cЗакрыть"
+
+# Таймер скупщика (значение не больше дня)
+timer:
+  h: 1
+  m: 0
+  s: 0
+
+# Настройка GUI
+# Цвета стеклянных панелей
+#red_glass
+#orange_glass
+#yellow_glass
+#lime_glass
+#green_glass
+#cyan_glass
+#light_blue_glass
+#blue_glass
+#purple_glass
+#magenta_glass
+#pink_glass
+#white_glass
+#gray_glass
+#light_gray_glass
+#black_glass
+
+gui:
+  mainItem: "black_glass"
+  exitButtonItem: "red_glass"

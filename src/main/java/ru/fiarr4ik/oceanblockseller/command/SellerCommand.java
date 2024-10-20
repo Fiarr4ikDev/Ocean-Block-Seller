@@ -40,13 +40,14 @@ import java.util.Random;
     public class SellerCommand implements CommandExecutor, Listener {
 
         private final JavaPlugin plugin;
-
+        private Economy economy;
         private final ObjectMapper objectMapper;
+        private final File itemConfig;
+
         private final ConfigService configService;
         private final ChatService chatService;
         private final InventoryService inventoryService;
         private final EconomyService economyService;
-        private Economy economy;
 
         /**
          * Конструктор для инициализации экземпляра экономики.
@@ -61,6 +62,7 @@ import java.util.Random;
             this.economyService = new EconomyService(plugin);
             this.economy = economyService.getEconomy();
             this.plugin = plugin;
+            this.itemConfig = configService.getItemConfig();
         }
 
         /**
@@ -199,16 +201,15 @@ import java.util.Random;
         }
 
         private void saveItemToConfig(String name, int amount, double minPrice, double maxPrice) {
-            File file = new File(plugin.getDataFolder(), "config/items.json");
             List<Item> items = new ArrayList<>();
 
-            if (file.exists()) {
-                items = loadItemsFromFile(file);
+            if (itemConfig.exists()) {
+                items = loadItemsFromFile(itemConfig);
             }
 
             items.add(new Item(name, amount, minPrice, maxPrice));
 
-            try (FileWriter writer = new FileWriter(file)) {
+            try (FileWriter writer = new FileWriter(itemConfig)) {
                 objectMapper.writeValue(writer, items);
             } catch (IOException e) {
                 e.printStackTrace();
